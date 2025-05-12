@@ -1,0 +1,15 @@
+services:
+    example-go-web:
+        platform: linux/amd64
+        container_name: example-go-web
+        build:
+            context: ./.dockers/postgresql
+            dockerfile: Dockerfile
+        environment:
+            - POSTGRES_USER=admin
+            - POSTGRES_PASSWORD=123456
+            - POSTGRES_DB=example_go_web
+        ports:
+            - "5433:5432"
+        volumes:
+            - ./.dockers/postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql
