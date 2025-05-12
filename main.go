@@ -15,8 +15,7 @@ import (
 
 func main() {
 	router := chi.NewRouter()
-	userSrv := user.NewService()
-	userEnd := user.MakeEndpoints(userSrv)
+	l := log.New(os.Stdout, "api: ", log.LstdFlags)
 	_ = godotenv.Load()
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		os.Getenv("DB_HOST"),
@@ -33,6 +32,10 @@ func main() {
 	_ = db.Debug()
 
 	_ = db.AutoMigrate(&user.User{})
+
+	userRepo := user.NewRepository(l, db)
+	userSrv := user.NewService(l, userRepo)
+	userEnd := user.MakeEndpoints(userSrv)
 
 	router.Get("/users/{id}", userEnd.Get)
 	router.Get("/users", userEnd.GetAll)
