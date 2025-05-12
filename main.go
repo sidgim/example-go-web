@@ -1,12 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/joho/godotenv"
 	"github.com/sidgim/example-go-web/internal/user"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -14,8 +17,14 @@ func main() {
 	router := chi.NewRouter()
 	userSrv := user.NewService()
 	userEnd := user.MakeEndpoints(userSrv)
-
-	dsn := "host=localhost user=admin password=123456 dbname=example_go_web port=5433 sslmode=disable TimeZone=America/Santiago"
+	_ = godotenv.Load()
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
