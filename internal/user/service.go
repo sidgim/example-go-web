@@ -1,17 +1,29 @@
 package user
 
 import (
+	"gorm.io/gorm"
 	"log"
 )
 
-type Service interface {
-	Create(req CreateRequest) error
-}
+type (
+	Filters struct {
+		FirstName string
+		LastName  string
+	}
 
-type service struct {
-	log  *log.Logger
-	repo Repository
-}
+	Service interface {
+		Create(req CreateRequest) (*User, error)
+		Get(id string) (*User, error)
+		GetAll(filters Filters) ([]User, error)
+		Delete(id string) error
+		UpdateContact(id string, req UpdateRequest) (*User, error)
+		Count(filters Filters) (int64, error)
+	}
+	service struct {
+		log  *log.Logger
+		repo Repository
+	}
+)
 
 func NewService(log *log.Logger, repo Repository) Service {
 	return &service{
@@ -20,7 +32,7 @@ func NewService(log *log.Logger, repo Repository) Service {
 	}
 }
 
-func (s *service) Create(req CreateRequest) error {
+func (s *service) Create(req CreateRequest) (*User, error) {
 	s.log.Println("Creating user:", req)
 	user := User{
 		FirstName: req.FirstName,
@@ -30,7 +42,64 @@ func (s *service) Create(req CreateRequest) error {
 	}
 	if err := s.repo.Create(&user); err != nil {
 		s.log.Println("Error creating user:", err)
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (s *service) Get(id string) (*User, error) {
+	user, err := s.repo.Get(id)
+	if err != nil {
+		s.log.Println("Error getting user:", err)
+		return nil, err
+	}
+	return user, nil
+}
+
+func (s *service) GetAll(filters Filters) ([]User, error) {
+	users, err := s.repo.GetAll(filters)
+	if err != nil {
+		s.log.Println("Error getting all users:", err)
+		return nil, err
+	}
+	return users, nil
+}
+
+func (s *service) Delete(id string) error {
+	if err := s.repo.Delete(id); err != nil {
+		s.log.Println("Error deleting user:", err)
 		return err
 	}
+	s.log.Println("User deleted:", id)
 	return nil
+}
+
+func (s *service) UpdateContact(id string, req UpdateRequest) (*User, error) {
+
+	// 2.2 Traer el user existente pa’ validar que exista
+	existing, err := s.repo.Get(id)
+	if err != nil {
+		s.log.Printf("Error fetching user %s: %v", id, err)
+		return nil, err
+	}
+	if existing == nil {
+		s.log.Printf("User %s no encontrado", id)
+		return nil, gorm.ErrRecordNotFound
+	}
+
+	// 2.3 Actualizar los campos en el objeto
+	existing.Email = req.Email
+	existing.Phone = req.Phone
+
+	// 2.4 LLamar al repo “partial update” (solo email y phone)
+	if err := s.repo.UpdateContact(id, req); err != nil {
+		s.log.Printf("Error updating contact for %s: %v", id, err)
+		return nil, err
+	}
+
+	s.log.Printf("User %s contact updated: email=%s phone=%s", id, req.Email, req.Phone)
+	return existing, nil
+}
+func (s *service) Count(filters Filters) (int64, error) {
+	return s.repo.Count(filters)
 }
