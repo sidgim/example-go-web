@@ -10,6 +10,7 @@ import (
 	"github.com/sidgim/example-go-web/pkg/meta"
 	"gorm.io/gorm"
 	"net/http"
+	"strconv"
 )
 
 var validate = validator.New()
@@ -81,24 +82,27 @@ func makeGetAllEndpoint(s Service) http.HandlerFunc {
 			FirstName: v.Get("first_name"),
 			LastName:  v.Get("last_name"),
 		}
+		limit, _ := strconv.Atoi(v.Get("limit"))
+		page, _ := strconv.Atoi(v.Get("offset"))
 
 		count, err := s.Count(filters)
 		if err != nil {
 			httphelper.WriteError(w, http.StatusInternalServerError, "Failed to count users")
 			return
 		}
-		meta, err := meta.New(count)
+		m, err := meta.New(page, limit, count)
+
 		if err != nil {
 			httphelper.WriteError(w, http.StatusInternalServerError, "Failed to create meta")
 			return
 		}
 
-		user, err := s.GetAll(filters)
+		user, err := s.GetAll(filters, m.Offset(), m.Limit())
 		if err != nil {
 			httphelper.WriteError(w, http.StatusInternalServerError, "Failed to get all users")
 			return
 		}
-		httphelper.WriteSuccess(w, http.StatusOK, user, meta)
+		httphelper.WriteSuccess(w, http.StatusOK, user, m)
 	}
 }
 

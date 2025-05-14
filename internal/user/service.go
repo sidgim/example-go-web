@@ -14,10 +14,10 @@ type (
 	Service interface {
 		Create(req CreateRequest) (*User, error)
 		Get(id string) (*User, error)
-		GetAll(filters Filters) ([]User, error)
+		GetAll(filters Filters, offset, limit int) ([]User, error)
 		Delete(id string) error
 		UpdateContact(id string, req UpdateRequest) (*User, error)
-		Count(filters Filters) (int64, error)
+		Count(filters Filters) (int, error)
 	}
 	service struct {
 		log  *log.Logger
@@ -56,8 +56,8 @@ func (s *service) Get(id string) (*User, error) {
 	return user, nil
 }
 
-func (s *service) GetAll(filters Filters) ([]User, error) {
-	users, err := s.repo.GetAll(filters)
+func (s *service) GetAll(filters Filters, offset, limit int) ([]User, error) {
+	users, err := s.repo.GetAll(filters, offset, limit)
 	if err != nil {
 		s.log.Println("Error getting all users:", err)
 		return nil, err
@@ -100,6 +100,6 @@ func (s *service) UpdateContact(id string, req UpdateRequest) (*User, error) {
 	s.log.Printf("User %s contact updated: email=%s phone=%s", id, req.Email, req.Phone)
 	return existing, nil
 }
-func (s *service) Count(filters Filters) (int64, error) {
+func (s *service) Count(filters Filters) (int, error) {
 	return s.repo.Count(filters)
 }

@@ -11,10 +11,10 @@ import (
 type Repository interface {
 	Create(user *User) error
 	Get(id string) (*User, error)
-	GetAll(filters Filters) ([]User, error)
+	GetAll(filters Filters, offset, limit int) ([]User, error)
 	Delete(id string) error
 	UpdateContact(id string, req UpdateRequest) error
-	Count(filters Filters) (int64, error)
+	Count(filters Filters) (int, error)
 }
 
 type repo struct {
@@ -49,10 +49,11 @@ func (r *repo) Get(id string) (*User, error) {
 	return &user, nil
 }
 
-func (r *repo) GetAll(filters Filters) ([]User, error) {
+func (r *repo) GetAll(filters Filters, offset, limit int) ([]User, error) {
 	var users []User
 	db := r.db.Model(&User{})
 	db = applyFilters(db, filters)
+	db = db.Offset(offset).Limit(limit)
 	if err := db.Order("created_at desc").Find(&users).Error; err != nil {
 		return nil, err
 	}
@@ -110,12 +111,12 @@ func applyFilters(db *gorm.DB, filters Filters) *gorm.DB {
 	return db
 }
 
-func (r *repo) Count(filters Filters) (int64, error) {
+func (r *repo) Count(filters Filters) (int, error) {
 	var count int64
 	db := r.db.Model(&User{})
 	db = applyFilters(db, filters)
 	if err := db.Count(&count).Error; err != nil {
 		return 0, err
 	}
-	return count, nil
+	return int(count), nil
 }
