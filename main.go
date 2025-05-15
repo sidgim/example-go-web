@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
+	"github.com/sidgim/example-go-web/internal/course"
 	"github.com/sidgim/example-go-web/internal/user"
 	"github.com/sidgim/example-go-web/pkg/bootstrap"
 	"log"
@@ -28,6 +29,16 @@ func main() {
 	router.Post("/users", userEnd.Create)
 	router.Put("/users/{id}", userEnd.Update)
 	router.Delete("/users/{id}", userEnd.Delete)
+
+	courseRepo := course.NewRepository(l, db)
+	courseSrv := course.NewService(l, courseRepo)
+	courseEnd := course.MakeEndpoints(courseSrv)
+
+	router.Get("/courses/{id}", courseEnd.Get)
+	router.Get("/courses", courseEnd.GetAll)
+	router.Post("/courses", courseEnd.Create)
+	router.Put("/courses/{id}", courseEnd.Update)
+	router.Delete("/courses/{id}", courseEnd.Delete)
 
 	srv := &http.Server{
 		Handler:      http.TimeoutHandler(router, time.Second*3, "Timeout!"),

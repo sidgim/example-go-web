@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"fmt"
+	"github.com/sidgim/example-go-web/internal/course"
 	"github.com/sidgim/example-go-web/internal/user"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -10,8 +11,8 @@ import (
 )
 
 func InitLogger() *log.Logger {
-	log := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-	return log
+	appLogger := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	return appLogger
 }
 
 func DBConnection() (*gorm.DB, error) {
@@ -33,7 +34,9 @@ func DBConnection() (*gorm.DB, error) {
 
 	if os.Getenv("DATABASE_MIGRATE") == "true" {
 		if err := db.AutoMigrate(&user.User{}); err != nil {
-			log.Fatal("failed to migrate DB:", err)
+			return nil, err
+		}
+		if err := db.AutoMigrate(&course.Course{}); err != nil {
 			return nil, err
 		}
 	}

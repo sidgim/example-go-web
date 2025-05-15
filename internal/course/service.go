@@ -1,1 +1,102 @@
 package course
+
+import "log"
+
+type (
+	Service interface {
+		Create(req CreateRequest) (*Course, error)
+		GetById(id string) (*Course, error)
+		GetAll(filters Filters, offset, limit int) ([]Course, error)
+		Update(id string, updateRequest UpdateRequest) (*Course, error)
+		Delete(id string) error
+		Count(filters Filters) (int, error)
+	}
+
+	service struct {
+		repository Repository
+		log        *log.Logger
+	}
+
+	Filters struct {
+		Name string
+	}
+)
+
+func NewService(log *log.Logger, repository Repository) Service {
+	return &service{
+		repository: repository,
+		log:        log,
+	}
+}
+
+func (s *service) Create(req CreateRequest) (*Course, error) {
+	course := Course{
+		Name:      req.Name,
+		StartDate: req.StartDate,
+		EndDate:   req.EndDate,
+	}
+	if err := s.repository.Create(&course); err != nil {
+		s.log.Println("Error creating course:", err)
+		return nil, err
+	}
+	return &course, nil
+}
+func (s *service) GetById(id string) (*Course, error) {
+	course, err := s.repository.GetById(id)
+	if err != nil {
+		s.log.Println("Error getting course:", err)
+		return nil, err
+	}
+	return course, nil
+}
+
+func (s *service) GetAll(filters Filters, offset, limit int) ([]Course, error) {
+	courses, err := s.repository.GetAll(filters, offset, limit)
+	if err != nil {
+		s.log.Println("Error getting all courses:", err)
+		return nil, err
+	}
+	return courses, nil
+}
+func (s *service) Update(id string, updateRequest UpdateRequest) (*Course, error) {
+	course, err := s.repository.GetById(id)
+	if err != nil {
+		s.log.Println("Error getting course:", err)
+		return nil, err
+	}
+	if course == nil {
+		s.log.Println("Course not found")
+		return nil, nil
+	}
+
+	course.EndDate = updateRequest.EndDate
+	course.StartDate = updateRequest.StartDate
+	course.Name = updateRequest.Name
+
+	if err := s.repository.Update(id, updateRequest); err != nil {
+		s.log.Println("Error updating course:", err)
+		return nil, err
+	}
+	return course, nil
+}
+func (s *service) Delete(id string) error {
+	course, err := s.repository.GetById(id)
+	if err != nil {
+		s.log.Println("Error getting course:", err)
+		return err
+	}
+	if course == nil {
+		s.log.Println("Course not found")
+		return nil
+	}
+
+	if err := s.repository.Delete(id); err != nil {
+		s.log.Println("Error deleting course:", err)
+		return err
+	}
+	return nil
+}
+
+func (s *service) Count(filters Filters) (int, error) {
+	return s.repository.Count(filters)
+}

@@ -101,12 +101,12 @@ func (r *repo) UpdateContact(id string, req UpdateRequest) error {
 func applyFilters(db *gorm.DB, filters Filters) *gorm.DB {
 	if filters.FirstName != "" {
 		filters.FirstName = fmt.Sprintf("%%%s%%", strings.ToLower(filters.FirstName))
-		db = db.Where("lower(first_name) LIKE ?", "%"+filters.FirstName+"%")
+		db = db.Where("lower(first_name) LIKE ?", filters.FirstName)
 	}
 
 	if filters.LastName != "" {
 		filters.LastName = fmt.Sprintf("%%%s%%", strings.ToLower(filters.LastName))
-		db = db.Where("lower(last_name) LIKE ?", "%"+filters.LastName+"%")
+		db = db.Where("lower(last_name) LIKE ?", filters.LastName)
 	}
 	return db
 }
