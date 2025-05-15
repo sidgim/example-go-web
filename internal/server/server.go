@@ -17,7 +17,7 @@ type Server struct {
 // NewServer arma el http.Server con timeouts y un posible graceful-shutdown
 func NewServer(handler http.Handler) *Server {
 	return &Server{
-		Addr:    ":8080",
+		Addr:    ":8000",
 		Handler: handler,
 	}
 }

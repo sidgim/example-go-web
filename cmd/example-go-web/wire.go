@@ -17,16 +17,18 @@ func provideDB() (*gorm.DB, error) {
 
 // ----------- Course Module -----------
 var courseSet = wire.NewSet(
-	provideDB,            // inyecta *gorm.DB
-	course.NewRepository, // func NewRepository(*gorm.DB) *Repo
-	course.NewService,    // func NewService(*Repo) *Service
+	provideDB,
+	user.NewRepository,
+	user.NewService,
+	user.NewUserHandler,
 )
 
 // ----------- User Module -----------
 var userSet = wire.NewSet(
 	provideDB,
-	user.NewRepository, // func NewRepository(*gorm.DB) *Repo
-	user.NewService,    // func NewService(*Repo) *Service
+	course.NewRepository,
+	course.NewService,
+	course.NewCourseHandler,
 )
 
 // ----------- Server & Router -----------
