@@ -1,13 +1,16 @@
 package course
 
-import "log"
+import (
+	"github.com/sidgim/example-go-web/internal/domain"
+	"log"
+)
 
 type (
 	Service interface {
-		Create(req CreateRequest) (*Course, error)
-		GetById(id string) (*Course, error)
-		GetAll(filters Filters, offset, limit int) ([]Course, error)
-		Update(id string, updateRequest UpdateRequest) (*Course, error)
+		Create(req CreateRequest) (*domain.Course, error)
+		GetById(id string) (*domain.Course, error)
+		GetAll(filters Filters, offset, limit int) ([]domain.Course, error)
+		Update(id string, updateRequest UpdateRequest) (*domain.Course, error)
 		Delete(id string) error
 		Count(filters Filters) (int, error)
 	}
@@ -29,8 +32,8 @@ func NewService(log *log.Logger, repository Repository) Service {
 	}
 }
 
-func (s *service) Create(req CreateRequest) (*Course, error) {
-	course := Course{
+func (s *service) Create(req CreateRequest) (*domain.Course, error) {
+	course := domain.Course{
 		Name:      req.Name,
 		StartDate: req.StartDate,
 		EndDate:   req.EndDate,
@@ -41,7 +44,7 @@ func (s *service) Create(req CreateRequest) (*Course, error) {
 	}
 	return &course, nil
 }
-func (s *service) GetById(id string) (*Course, error) {
+func (s *service) GetById(id string) (*domain.Course, error) {
 	course, err := s.repository.GetById(id)
 	if err != nil {
 		s.log.Println("Error getting course:", err)
@@ -50,7 +53,7 @@ func (s *service) GetById(id string) (*Course, error) {
 	return course, nil
 }
 
-func (s *service) GetAll(filters Filters, offset, limit int) ([]Course, error) {
+func (s *service) GetAll(filters Filters, offset, limit int) ([]domain.Course, error) {
 	courses, err := s.repository.GetAll(filters, offset, limit)
 	if err != nil {
 		s.log.Println("Error getting all courses:", err)
@@ -58,14 +61,14 @@ func (s *service) GetAll(filters Filters, offset, limit int) ([]Course, error) {
 	}
 	return courses, nil
 }
-func (s *service) Update(id string, updateRequest UpdateRequest) (*Course, error) {
+func (s *service) Update(id string, updateRequest UpdateRequest) (*domain.Course, error) {
 	course, err := s.repository.GetById(id)
 	if err != nil {
 		s.log.Println("Error getting course:", err)
 		return nil, err
 	}
 	if course == nil {
-		s.log.Println("Course not found")
+		s.log.Println("domain not found")
 		return nil, nil
 	}
 
@@ -86,7 +89,7 @@ func (s *service) Delete(id string) error {
 		return err
 	}
 	if course == nil {
-		s.log.Println("Course not found")
+		s.log.Println("domain.Course not found")
 		return nil
 	}
 

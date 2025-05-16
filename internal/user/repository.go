@@ -3,15 +3,16 @@ package user
 import (
 	"errors"
 	"fmt"
+	"github.com/sidgim/example-go-web/internal/domain"
 	"gorm.io/gorm"
 	"log"
 	"strings"
 )
 
 type Repository interface {
-	Create(user *User) error
-	Get(id string) (*User, error)
-	GetAll(filters Filters, offset, limit int) ([]User, error)
+	Create(user *domain.User) error
+	Get(id string) (*domain.User, error)
+	GetAll(filters Filters, offset, limit int) ([]domain.User, error)
 	Delete(id string) error
 	UpdateContact(id string, req UpdateRequest) error
 	Count(filters Filters) (int, error)
@@ -28,7 +29,7 @@ func NewRepository(log *log.Logger, db *gorm.DB) Repository {
 		log: log}
 }
 
-func (r *repo) Create(user *User) error {
+func (r *repo) Create(user *domain.User) error {
 	if err := r.db.Create(user).Error; err != nil {
 		return err
 	}
@@ -36,8 +37,8 @@ func (r *repo) Create(user *User) error {
 	return nil
 }
 
-func (r *repo) Get(id string) (*User, error) {
-	var user User
+func (r *repo) Get(id string) (*domain.User, error) {
+	var user domain.User
 	if err := r.db.First(&user, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r.log.Println("User not found:", id)
@@ -49,9 +50,9 @@ func (r *repo) Get(id string) (*User, error) {
 	return &user, nil
 }
 
-func (r *repo) GetAll(filters Filters, offset, limit int) ([]User, error) {
-	var users []User
-	db := r.db.Model(&User{})
+func (r *repo) GetAll(filters Filters, offset, limit int) ([]domain.User, error) {
+	var users []domain.User
+	db := r.db.Model(&domain.User{})
 	db = applyFilters(db, filters)
 	db = db.Offset(offset).Limit(limit)
 	if err := db.Order("created_at desc").Find(&users).Error; err != nil {
@@ -63,7 +64,7 @@ func (r *repo) GetAll(filters Filters, offset, limit int) ([]User, error) {
 }
 
 func (r *repo) Delete(id string) error {
-	var user User
+	var user domain.User
 	if err := r.db.First(&user, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r.log.Println("User not found for deletion:", id)
@@ -85,7 +86,7 @@ func (r *repo) UpdateContact(id string, req UpdateRequest) error {
 		"phone": req.Phone,
 	}
 	res := r.db.
-		Model(&User{}).
+		Model(&domain.User{}).
 		Where("id = ?", id).
 		Updates(changes)
 
@@ -113,7 +114,7 @@ func applyFilters(db *gorm.DB, filters Filters) *gorm.DB {
 
 func (r *repo) Count(filters Filters) (int, error) {
 	var count int64
-	db := r.db.Model(&User{})
+	db := r.db.Model(&domain.User{})
 	db = applyFilters(db, filters)
 	if err := db.Count(&count).Error; err != nil {
 		return 0, err

@@ -16,16 +16,16 @@ import (
 
 var validate = validator.New()
 
-type CourseHandler struct {
+type Handler struct {
 	svc Service
 }
 
-func NewCourseHandler(svc Service) *CourseHandler {
-	return &CourseHandler{svc: svc}
+func NewCourseHandler(svc Service) *Handler {
+	return &Handler{svc: svc}
 }
 
 // Mount engancha los endpoints de course al router
-func (h *CourseHandler) Mount(r chi.Router) {
+func (h *Handler) Mount(r chi.Router) {
 	r.Get("/", h.GetAll)
 	r.Post("/", h.Create)
 	r.Route("/{id}", func(r chi.Router) {
@@ -35,7 +35,7 @@ func (h *CourseHandler) Mount(r chi.Router) {
 	})
 }
 
-func (h *CourseHandler) Create(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var req CreateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httphelper.WriteError(w, http.StatusBadRequest, "invalid JSON payload")
@@ -54,7 +54,7 @@ func (h *CourseHandler) Create(w http.ResponseWriter, r *http.Request) {
 	httphelper.WriteSuccess(w, http.StatusCreated, crs, nil)
 }
 
-func (h *CourseHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if _, err := uuid.Parse(id); err != nil {
 		httphelper.WriteError(w, http.StatusBadRequest, "invalid UUID")
@@ -73,7 +73,7 @@ func (h *CourseHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	httphelper.WriteSuccess(w, http.StatusOK, crs, nil)
 }
 
-func (h *CourseHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	limit, _ := strconv.Atoi(q.Get("limit"))
 	offset, _ := strconv.Atoi(q.Get("offset"))
@@ -100,7 +100,7 @@ func (h *CourseHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	httphelper.WriteSuccess(w, http.StatusOK, list, m)
 }
 
-func (h *CourseHandler) Update(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if _, err := uuid.Parse(id); err != nil {
 		httphelper.WriteError(w, http.StatusBadRequest, "invalid UUID")
@@ -129,7 +129,7 @@ func (h *CourseHandler) Update(w http.ResponseWriter, r *http.Request) {
 	httphelper.WriteSuccess(w, http.StatusOK, crs, nil)
 }
 
-func (h *CourseHandler) Delete(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if _, err := uuid.Parse(id); err != nil {
 		httphelper.WriteError(w, http.StatusBadRequest, "invalid UUID")

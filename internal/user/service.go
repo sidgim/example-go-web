@@ -1,6 +1,7 @@
 package user
 
 import (
+	"github.com/sidgim/example-go-web/internal/domain"
 	"gorm.io/gorm"
 	"log"
 )
@@ -12,11 +13,11 @@ type (
 	}
 
 	Service interface {
-		Create(req CreateRequest) (*User, error)
-		Get(id string) (*User, error)
-		GetAll(filters Filters, offset, limit int) ([]User, error)
+		Create(req CreateRequest) (*domain.User, error)
+		Get(id string) (*domain.User, error)
+		GetAll(filters Filters, offset, limit int) ([]domain.User, error)
 		Delete(id string) error
-		UpdateContact(id string, req UpdateRequest) (*User, error)
+		UpdateContact(id string, req UpdateRequest) (*domain.User, error)
 		Count(filters Filters) (int, error)
 	}
 	service struct {
@@ -32,9 +33,9 @@ func NewService(log *log.Logger, repo Repository) Service {
 	}
 }
 
-func (s *service) Create(req CreateRequest) (*User, error) {
+func (s *service) Create(req CreateRequest) (*domain.User, error) {
 	s.log.Println("Creating user:", req)
-	user := User{
+	user := domain.User{
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Email:     req.Email,
@@ -47,7 +48,7 @@ func (s *service) Create(req CreateRequest) (*User, error) {
 	return &user, nil
 }
 
-func (s *service) Get(id string) (*User, error) {
+func (s *service) Get(id string) (*domain.User, error) {
 	user, err := s.repo.Get(id)
 	if err != nil {
 		s.log.Println("Error getting user:", err)
@@ -56,7 +57,7 @@ func (s *service) Get(id string) (*User, error) {
 	return user, nil
 }
 
-func (s *service) GetAll(filters Filters, offset, limit int) ([]User, error) {
+func (s *service) GetAll(filters Filters, offset, limit int) ([]domain.User, error) {
 	users, err := s.repo.GetAll(filters, offset, limit)
 	if err != nil {
 		s.log.Println("Error getting all users:", err)
@@ -70,11 +71,11 @@ func (s *service) Delete(id string) error {
 		s.log.Println("Error deleting user:", err)
 		return err
 	}
-	s.log.Println("User deleted:", id)
+	s.log.Println("domain.User deleted:", id)
 	return nil
 }
 
-func (s *service) UpdateContact(id string, req UpdateRequest) (*User, error) {
+func (s *service) UpdateContact(id string, req UpdateRequest) (*domain.User, error) {
 
 	// 2.2 Traer el user existente pa’ validar que exista
 	existing, err := s.repo.Get(id)
@@ -83,7 +84,7 @@ func (s *service) UpdateContact(id string, req UpdateRequest) (*User, error) {
 		return nil, err
 	}
 	if existing == nil {
-		s.log.Printf("User %s no encontrado", id)
+		s.log.Printf("domain.User %s no encontrado", id)
 		return nil, gorm.ErrRecordNotFound
 	}
 
@@ -97,7 +98,7 @@ func (s *service) UpdateContact(id string, req UpdateRequest) (*User, error) {
 		return nil, err
 	}
 
-	s.log.Printf("User %s contact updated: email=%s phone=%s", id, req.Email, req.Phone)
+	s.log.Printf("domain.User %s contact updated: email=%s phone=%s", id, req.Email, req.Phone)
 	return existing, nil
 }
 func (s *service) Count(filters Filters) (int, error) {

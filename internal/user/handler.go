@@ -15,19 +15,19 @@ import (
 )
 
 // 1. El struct que guarda tu service
-type UserHandler struct {
+type Handler struct {
 	svc Service
 }
 
 var validate = validator.New()
 
 // 2. Constructor
-func NewUserHandler(svc Service) *UserHandler {
-	return &UserHandler{svc: svc}
+func NewUserHandler(svc Service) *Handler {
+	return &Handler{svc: svc}
 }
 
 // 3. Mount: se “engancha” al router
-func (h *UserHandler) Mount(r chi.Router) {
+func (h *Handler) Mount(r chi.Router) {
 	r.Get("/", h.GetAll)
 	r.Post("/", h.Create)
 	r.Route("/{id}", func(r chi.Router) {
@@ -39,7 +39,7 @@ func (h *UserHandler) Mount(r chi.Router) {
 
 // 4. Handlers como métodos del struct
 
-func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var req CreateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httphelper.WriteError(w, http.StatusBadRequest, "invalid JSON")
@@ -58,7 +58,7 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	httphelper.WriteSuccess(w, http.StatusCreated, usr, nil)
 }
 
-func (h *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if _, err := uuid.Parse(id); err != nil {
 		httphelper.WriteError(w, http.StatusBadRequest, "invalid UUID")
@@ -77,7 +77,7 @@ func (h *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	httphelper.WriteSuccess(w, http.StatusOK, usr, nil)
 }
 
-func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	limit, _ := strconv.Atoi(q.Get("limit"))
 	offset, _ := strconv.Atoi(q.Get("offset"))
@@ -105,7 +105,7 @@ func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	httphelper.WriteSuccess(w, http.StatusOK, list, m)
 }
 
-func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if _, err := uuid.Parse(id); err != nil {
 		httphelper.WriteError(w, http.StatusBadRequest, "invalid UUID")
@@ -134,7 +134,7 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	httphelper.WriteSuccess(w, http.StatusOK, updated, nil)
 }
 
-func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if _, err := uuid.Parse(id); err != nil {
 		httphelper.WriteError(w, http.StatusBadRequest, "invalid UUID")

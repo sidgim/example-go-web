@@ -2,3 +2,4 @@
 .idea
 go.sum
 go.mod
+wire_gen.go
